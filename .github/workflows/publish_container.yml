@@ -1,9 +1,8 @@
 name: Publish Docker image
 
 on:
-  release:
-    types: [published]
-
+  #Run this workflow manually from the Actions tab
+  workflow_dispatch:
 jobs:
   push_to_registry:
     name: Push Docker image to Docker Hub
