@@ -1,2 +1,0 @@
-docker build . -f dockerfile -t lop-roles
-docker run --env-file env_vars.conf lop-roles
