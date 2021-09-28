@@ -1,9 +1,15 @@
 # Create a slim image (stage 1)
 FROM python:3.8 AS builder
-COPY requirements.txt .
+#COPY requirements.txt .
 
 # install dependencies to the local user directory (eg. /root/.local)
-RUN pip install --user -r requirements.txt
+#RUN pip3 install --user -r requirements.txt
+
+RUN pip3 install --user pandas
+RUN pip3 install --user numpy
+RUN pip3 install --user s3fs
+RUN pip3 install --user boto3
+RUN pip3 install --user argparse
 
 # building slim stage
 FROM python:3.8-slim
