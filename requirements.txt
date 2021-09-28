@@ -1,5 +1,7 @@
 pandas
-openpyxl
+collections
 numpy
 s3fs
 boto3
+json
+argparse
