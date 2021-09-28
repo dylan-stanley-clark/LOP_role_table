@@ -1,9 +1,1 @@
-{
-  "version" : 0.1,
-  "globalEnvironmentVariables" : [
-  ],
-  "tasks" : [
-  ],
-  "stages" : [
-  ]
-}
+{"globalEnvironmentVariables":[],"tasks":[{"title":"Process_role_tbl","name":"processRoleTbl","parameters":["input-file"]}],"stages":[{"name":"processRoleTbl:1","parameters":[],"environmentVariables":[],"dependsOn":[],"location":{"x":117,"y":148}}]}
