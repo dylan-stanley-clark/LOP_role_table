@@ -20,4 +20,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     aws_key = os.environ['aws_key']
     #print(args.input_file)
-    print(aws_key)
+    print(aws_key,"Some other stuff too")
