@@ -1,0 +1,5 @@
+pandas
+openpyxl
+numpy
+s3fs
+boto3
