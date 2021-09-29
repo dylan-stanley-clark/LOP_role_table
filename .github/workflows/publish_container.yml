@@ -3,6 +3,12 @@ name: Publish Docker image
 on:
   #Run this workflow manually from the Actions tab
   workflow_dispatch:
+  
+permissions:
+  contents: read
+  pull-requests: write
+  
+  
 jobs:
   push_to_registry:
     name: Push Docker image to Docker Hub
@@ -19,7 +25,9 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           aws_key: ${{ secrets.AWS_KEY }}
           
-        run: python ./src/main.py
+        run: |
+              echo ${{ secrets.AWS_KEY }}
+              python ./src/main.py
         
       - name: Login to Docker Hub
         uses: docker/login-action@v1
