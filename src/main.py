@@ -4,7 +4,7 @@
 # import numpy as np
 # import json
 import argparse
-# import os
+import os
 def create_argument_parser():
     """
     Function to add command line arguments at run time
