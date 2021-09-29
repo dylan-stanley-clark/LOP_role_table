@@ -5,6 +5,8 @@ import numpy as np
 import json
 import argparse
 import os
+# pre-proccesing script to clean up lop role table downloaded as xlsx
+
 def create_argument_parser():
     """
     Function to add command line arguments at run time
