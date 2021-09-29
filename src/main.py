@@ -2,7 +2,6 @@ import pandas as pd
 from collections import Counter
 from datetime import timedelta, date,datetime
 import numpy as np
-import json
 import argparse
 import os
 # pre-proccesing script to clean up lop role table downloaded as xlsx
