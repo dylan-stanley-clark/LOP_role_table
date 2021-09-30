@@ -33,5 +33,7 @@ jobs:
         run: |
               python tests.py --test-name="write_aws"
               
-              
+        env:
+          aws_access: ${{ secrets.aws_access }}
+          aws_key: ${{ secrets.aws_key }}
 
