@@ -1,13 +1,13 @@
 # This is a basic workflow to test if the docker container can be built
 
-name: run_container
+name: run proccess roles container
 
 on:
   #Run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# env:
-#   IMAGE_NAME: load_role_table
+env:
+  IMAGE_NAME: proccess_roles_table
 
 jobs:
   push:
@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: Build and run image to proccess LOP Roles table
         run: |
-              docker build . --file role_tbl_dockerfile --tag $proccess_roles --label "runnumber=${GITHUB_RUN_ID}"
+              docker build . --file role_tbl_dockerfile --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}"
               docker run proccess_roles --run-type="process" 
         env:
           aws_key: ${{ secrets.aws_key }}
