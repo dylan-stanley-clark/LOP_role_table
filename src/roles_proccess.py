@@ -127,7 +127,7 @@ if __name__ == "__main__":
         raw_roles = load_aws("raw/ParlinfoFederalAreaOfResponsibilitiy.xlsx")
 
     #run the preproccessing code
-    if args.run_type == 'process':
+    if args.run_type == 'proccess':
         #load role table from
         raw_roles = load_aws("raw/ParlinfoFederalAreaOfResponsibilitiy.xlsx")
         #get reference dates for adding session links to roles ie. what parliament it occured
