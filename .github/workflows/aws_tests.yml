@@ -40,7 +40,7 @@ jobs:
       - name: Test reading a table to AWS
         working-directory: ./src
         run: |
-              python roles_proccess.py --test-name="load_data_test"
+              python roles_proccess.py --run-type="load_data_test"
               
         env:
           aws_access: ${{ secrets.aws_access }}
