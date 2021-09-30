@@ -1,4 +1,4 @@
-# This is a basic workflow to test if the docker container can be built
+# This is a workflow to built the proccessing container and run it
 
 name: Proccess roles tbl
 
@@ -17,7 +17,7 @@ jobs:
       - name: Build and run image to proccess LOP Roles table
         run: |
               docker build . --file role_tbl_dockerfile --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}"
-              docker run $IMAGE_NAME --run-type="process" 
+              docker run -e AWS_KEY=${{ secrets.aws_key }} -e AWS_ACCESS=${{ secrets.aws_access }} $IMAGE_NAME --run-type="process" 
         env:
           aws_key: ${{ secrets.aws_key }}
           aws_access: ${{ secrets.aws_access }}
