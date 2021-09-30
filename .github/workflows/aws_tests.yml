@@ -36,4 +36,12 @@ jobs:
         env:
           aws_access: ${{ secrets.aws_access }}
           aws_key: ${{ secrets.aws_key }}
-
+          
+      - name: Test reading a table to AWS
+        working-directory: ./src
+        run: |
+              python tests.py --test-name="read_aws"
+              
+        env:
+          aws_access: ${{ secrets.aws_access }}
+          aws_key: ${{ secrets.aws_key }}
