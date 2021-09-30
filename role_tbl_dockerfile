@@ -5,11 +5,12 @@ FROM python:3.8 AS builder
 # install dependencies to the local user directory (eg. /root/.local)
 #RUN pip3 install --user -r requirements.txt
 
+RUN pip3 install --user openpyxl
 RUN pip3 install --user pandas
 RUN pip3 install --user numpy
-RUN pip3 install --user s3fs
 RUN pip3 install --user boto3
 RUN pip3 install --user argparse
+
 
 # building slim stage
 FROM python:3.8-slim
@@ -24,4 +25,4 @@ COPY ./src .
 ENV PATH=/root/.local:$PATH
 
 #identify name etc running
-CMD [ "python", "./main.py" ]
+ENTRYPOINT [ "python", "./roles_proccess.py" ]

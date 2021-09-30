@@ -1,2 +1,10 @@
 docker build . -f dockerfile -t lop-roles
+
+docker run --env-file env_vars.conf lop-roles --run-type="process" 
+
 docker run --env-file env_vars.conf lop-roles
+
+
+#tests with arguments
+docker build . -f tests_dockerfile -t lop-roles
+docker run --env-file env_vars.conf lop-roles-tests --test-name="write_aws" 
