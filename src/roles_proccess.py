@@ -3,24 +3,23 @@ import numpy as np
 import openpyxl
 import os
 import io
-#import s3fs
 import boto3
 import argparse
 AWS_ACCESS_KEY_ID = os.getenv("aws_access")[1:-1]
 AWS_SECRET_ACCESS_KEY = os.getenv("aws_key")[1:-1]
-# aws_credentials = { "key": os.getenv("aws_access"), "secret": os.getenv("aws_key")}
+#setup connection to s3
+s3 = boto3.resource(
+    service_name='s3',
+    region_name='ca-central-1',
+    aws_access_key_id=str(AWS_ACCESS_KEY_ID),#AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=str(AWS_SECRET_ACCESS_KEY)
+    )
+
 def load_aws(file,bucket='polemics',sheet="-"):
     """
     Function to read an excel or csv file from a s3 storage Bucket into a pandas dataframe
     file: the file name (aws key) to load
     """
-    #setup connection to s3
-    s3 = boto3.resource(
-        service_name='s3',
-        region_name='ca-central-1',
-        aws_access_key_id=str(AWS_ACCESS_KEY_ID),#AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=str(AWS_SECRET_ACCESS_KEY)
-    )
 
     # Load s3 file into pandas data frame
     file_obj = s3.Bucket('polemics').Object(file).get()
@@ -40,13 +39,6 @@ def write_csv_aws(df,file_name,bucket='polemics'):
     df: pandas dataframe to write to s3
     file: the file name (aws key) to save
     """
-    #setup connection to s3
-    s3 = boto3.resource(
-        service_name='s3',
-        region_name='ca-central-1',
-        aws_access_key_id=str(AWS_ACCESS_KEY_ID),#AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=str(AWS_SECRET_ACCESS_KEY)
-    )
     #write data to specified s3 bucket
     s3.Object(bucket, file_name).put(Body=df.to_csv())
     print("successfully wrote data to s3 csv")
@@ -125,15 +117,13 @@ if __name__ == "__main__":
         write_csv_aws(pd.DataFrame({'A' : []}),'test.csv')
     if args.run_type == 'load_data_test':
         raw_roles = load_aws("raw/ParlinfoFederalAreaOfResponsibilitiy.xlsx")
-
     #run the preproccessing code
     if args.run_type == 'proccess':
         #load role table from
         raw_roles = load_aws("raw/ParlinfoFederalAreaOfResponsibilitiy.xlsx")
         #get reference dates for adding session links to roles ie. what parliament it occured
         election_dates = load_aws("references/elections.xlsx",sheet='elections')
-        ministry_dates = load_aws("references/elections.xlsx",sheet='ministries')
-
+    
         # get rows assocaited with each parliament
         #proccess raw table from LOP
         raw_roles['parliament'] = assocaite_parls(raw_roles) # add coloumn 'parliament'

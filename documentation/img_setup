@@ -1,10 +1,8 @@
-docker build . -f dockerfile -t lop-roles
-
-docker run --env-file env_vars.conf lop-roles --run-type="process" 
-
-docker run --env-file env_vars.conf lop-roles
+#clean Library of Parliament Roles Table
+docker build . -f role_tbl_dockerfile -t lop-roles
+docker run --env-file env_vars.conf lop-roles --run-type="proccess" 
 
 
-#tests with arguments
-docker build . -f tests_dockerfile -t lop-roles
-docker run --env-file env_vars.conf lop-roles-tests --test-name="write_aws" 
+#proccess roles table into cabinet
+docker build . -f cabinet_tbl_dockerfile -t lop-cabinet
+docker run --env-file env_vars.conf lop-cabinet --run-type="proccess" 
