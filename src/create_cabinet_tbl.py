@@ -4,13 +4,14 @@ import argparse
 import os
 import io
 from datetime import timedelta, date,datetime
+import json
 
 AWS_ACCESS_KEY_ID = os.getenv("aws_access")[1:-1]
 AWS_SECRET_ACCESS_KEY = os.getenv("aws_key")[1:-1]
 s3 = boto3.resource(
     service_name='s3',
     region_name='ca-central-1',
-    aws_access_key_id=str(AWS_ACCESS_KEY_ID),#AWS_ACCESS_KEY_ID,
+    aws_access_key_id=str(AWS_ACCESS_KEY_ID),
     aws_secret_access_key=str(AWS_SECRET_ACCESS_KEY)
 )
 
@@ -18,6 +19,7 @@ file_obj = s3.Bucket('polemics').Object("references/elections.xlsx").get()
 ministry_dates = pd.read_excel(io.BytesIO(file_obj['Body'].read()),'ministries')
 
 def convert_date(date):
+    # convert dates from different formats
     try:
         d = datetime.strptime(date,"%Y/%m/%d")
         date2 = d.strftime("%d-%m-%Y")
@@ -108,47 +110,44 @@ if __name__ == "__main__":
         uid2 = roles_tbl['Name']+roles_tbl['Title']+roles_tbl['Start Date']
         roles_tbl.insert(len(list(roles_tbl)), "uid", uid2, True)
         false_cab.insert(len(list(false_cab)), "uid", uid1, True)
-
         common = roles_tbl.merge(false_cab, on=['uid'])
         df = roles_tbl[~roles_tbl['uid'].isin(common['uid'])]
         df.drop(columns=['uid'])
-        #looking just at the cabinent roles here
+
+        #exclude non-cabinet roles from data frame
         df2 = df[df['Role'].isin(['Minister','Minister (Acting)',
                                   'Minister (Acting Minister)','Secretary of State'])]
 
+        #include select roles that were erroneously discluded
         file_obj = s3.Bucket('polemics').Object('references/roles_tbl_changes.xlsx').get()
         true_cab = pd.read_excel(io.BytesIO(file_obj['Body'].read()),'include_roles')
-
         df2 = df2.append(true_cab, ignore_index=True)
 
         #convert all date to same format (day-month-year)
         df2.iloc[:,9] = [ convert_date(date) for date in list(df2['Start Date'])]
         df2.iloc[:,10] = [ convert_date(date) for date in list(df2['End Date'])]
 
+        #add new columns at end to determine which ministry a role started and ended
         df2.insert(len(list(df2)), "Start Ministry", get_ministry(df2['Start Date']), True)
         df2.insert(len(list(df2)), "End Ministry", get_ministry(df2['End Date'],kind="end"), True)
 
-        #get sittings data for each role/minister
+
         sittings = pd.DataFrame(columns=['Title','Name','Status','Gender','Constituency','Province or Territory',
                                 'Start Date','End Date','Parliament','Portfolios','Political Affiliation'])
-
-
-        print(len(df2))
+        #get sittings data for each role/minister
         for parl in list(df2['parliament'].unique()):
 
             df3 = df2[df2["parliament"] == parl]
-            #look at each minister role indepenendently
+
             for role in list(df3['Title'].unique()):
-
+                #look at each minister role indepenendently
                 df4 = df3[df3["Title"] == role]
-
+                #remove extra spaces at the end of the title
                 if role[-1]==" ":
-                    #remove extra spaces at the end
                     role = role[:-1]
 
-                #looking at each role per person, add unique id by role start date
+                #add unique id by name + role start date
                 uid = df4["Name"] + df4["Start Date"]
-                #df4.insert(len(list(df4)), "uid", uid, True)
                 df4 = df4.assign(uid=pd.Series(uid).values)
 
                 for name in list(df4['uid'].unique()):
@@ -162,16 +161,20 @@ if __name__ == "__main__":
                         num_ministries = (int(end_ministry) - int(start_ministry)) + 1
                     except:
                         #to catch un converted datetimes
-                        num_ministries = 'unknown'
+                        num_ministries = "Unknown"
                         ministries = [start_ministry,end_ministry]
 
+                    #add itermediary ministries if role spans more than 2 (ie. start 1, end 3)
                     if num_ministries == 2:
                         ministries = [start_ministry,end_ministry]
                     if num_ministries == 3:
                         ministries = [start_ministry,start_ministry+1,end_ministry]
                     if num_ministries == 1:
                         ministries = [start_ministry]
-
+                    try:
+                        ministries.remove("Unknown")
+                    except:
+                        pass
                     #get details for this person
                     status = df5['status'].to_list()[0]
                     gender = df5['Gender'].to_list()[0]
@@ -181,27 +184,16 @@ if __name__ == "__main__":
                     end = df5['End Date'].to_list()[0]
                     start = df5['Start Date'].to_list()[0]
                     parl = df5['parliament'].to_list()[0]
-                    #save portfolios as list
                     portfolio = list(df5['Portfolio'].unique())
 
-                    try:
-                        ministries.remove("Unknown")
-                        if ministries[0]=="Unknown" and end == "1892/12/04":
-                        # to catch Nathaniel Clarke's role of one day 'between' ministries
-                            ministries.remove("Unknown")
-                            ministries.append(4)
 
-                    except:
+                    #create row for each miniostry the role spans ie. 3 rows if role goes from ministry 1,2,3
+                    for ministry in ministries:
+                        sittings = sittings.append({'Title':role,'Name':name[:-10],'Status':status,'Gender':gender,'Political Affiliation':party,
+                                                    'Constituency':district,'Province or Territory':province,
+                                                    'Start Date':start,'End Date':end,'Parliament':parl,
+                                                    'Portfolios':portfolio,"Ministry":ministry}, ignore_index=True)
 
-                        pass
-
-                    sittings = sittings.append({'Title':role,'Name':name[:-10],'Status':status,'Gender':gender,'Political Affiliation':party,
-                                                'Constituency':district,'Province or Territory':province,
-                                                'Start Date':start,'End Date':end,'Parliament':parl,
-                                                'Portfolios':portfolio,"Ministries":ministries}, ignore_index=True)
-
-
-        print(len(sittings))
 
         s3.Object('polemics', 'processed/cabinet_tbl.csv').put(Body=sittings.to_csv())
-        print("successfully stored proccessed file in s3 bucket")
+        print("successfully stored proccessed file in s3 bucket!")
